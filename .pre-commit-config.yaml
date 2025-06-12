@@ -1,0 +1,7 @@
+repos:
+- repo: https://github.com/semgrep/pre-commit
+  rev: v1.124.1
+  hooks:
+    - id: semgrep
+      entry: semgrep
+      args: ['--config', './.semgrep-config.yaml', '--error', '--skip-unknown-extensions', '--metrics', 'off', '--disable-version-check']
