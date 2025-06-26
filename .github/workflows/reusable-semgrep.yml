@@ -45,7 +45,7 @@ jobs:
       - name: Reviewdog
         uses: reviewdog/action-setup@v1
         with:
-          reviewdog_view: latest
+          reviewdog_version: latest
 
       - name: jq
         run: apk add --no-cache jq
@@ -64,8 +64,8 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --json \
-          | jq -r '.results[] | "\(.path):\(.start.line):\(.start.col): [\(.extra.severity)] [\(.check_id)] \(.extra.message)"' \
-          | reviewdog -efm="%f:%l:%c: %m" \
+          | jq -r '.results[] | "\(.extra.severity):\(.path):\(.start.line): [\(.check_id)] \(.extra.message)"' \
+          | reviewdog -efm="%t:%f:%l: %m" \
               -name="semgrep" \
               -reporter=github-pr-review \
               -fail-level="$FAIL_LEVEL" \
