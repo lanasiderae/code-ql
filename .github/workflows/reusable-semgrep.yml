@@ -64,7 +64,7 @@ jobs:
           | reviewdog \
               -efm="%t:%f:%l:%c: %m" \
               -name="semgrep" \
-              -reporter=github-check \
+              -reporter=github-pr-review \
               -fail-level=error \
               -filter-mode=added
         env:
