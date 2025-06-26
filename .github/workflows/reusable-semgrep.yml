@@ -52,7 +52,7 @@ jobs:
 
       - name: semgrep
         run: |
-          semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}" --json
+          semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}"
         continue-on-error: true
         env:
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
@@ -64,7 +64,7 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}" --json \
-          | jq -r '.results[] | "\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"
+          | jq -r '.results[] | "\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"' \
           | reviewdog -efm="%f:%l:%c: %m" \
               -name="semgrep" \
               -reporter=github-pr-review \
@@ -75,4 +75,3 @@ jobs:
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
           FILTER_MODE:  ${{ inputs.filter_mode}}
           FAIL_LEVEL: ${{ inputs.fail_severity}}
-          
