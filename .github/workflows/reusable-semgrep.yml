@@ -60,14 +60,12 @@ jobs:
 
           echo "e:server/routes.py:10:5: [test.rule] This is a test issue from reviewdog" \
           | reviewdog \
-              -efm="%t:%f:%l:%c: %m" \
-              -name="test-reviewdog" \
-              -reporter=github-pr-review \
-              -filter-mode=nofilter \
-              -fail-level=error \
-              -fail-on-error=true \
-              -tee
-
+            -efm="%t:%f:%l:%c: %m" \
+            -name="semgrep" \
+            -reporter=github-pr-review \
+            -fail-level=error \
+            -filter-mode=added \
+            -tee
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
