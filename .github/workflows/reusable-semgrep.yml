@@ -57,11 +57,10 @@ jobs:
 
           semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}" --json \
           | jq -r '
-            .results[] 
-            | select(.path and .start.line and .start.col and .extra.message and .check_id)
-            | "e:\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"
-          '
-
+              .results[] 
+              | select(.path and .start.line and .start.col and .extra.message and .check_id)
+              | "e:\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"
+            ' \
           | reviewdog \
               -efm="%t:%f:%l:%c: %m" \
               -name="semgrep" \
