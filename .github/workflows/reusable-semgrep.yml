@@ -64,8 +64,9 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --json \
-          | jq -r '.results[] | "\(.extra.severity):\(.path):\(.start.line): [\(.check_id)] \(.extra.message)"' \
-          | reviewdog -efm="%t:%f:%l: %m" \
+          | jq -r '.results[] | "\(.extra.severity[0:1]):\(.path):\(.end.line) \(.extra.message)"' \
+          | reviewdog \
+              -efm="%t:%f:%l %m" \
               -name="semgrep" \
               -reporter=github-pr-review \
               -fail-level="$FAIL_LEVEL" \
