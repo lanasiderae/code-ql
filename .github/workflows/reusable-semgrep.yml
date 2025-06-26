@@ -61,6 +61,12 @@ jobs:
               | select(.path and .start.line and .start.col and .extra.message and .check_id) 
               | "ERROR:\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"
             ' \
+          | reviewdog \
+              -efm="%t:%f:%l:%c: %m" \
+              -name="semgrep" \
+              -reporter=github-check \
+              -fail-level="$FILTER_LEVEL" \
+              -filter-mode=$"FAIL_LEVEL"
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
