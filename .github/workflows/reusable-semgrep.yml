@@ -56,11 +56,9 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}" --json \
-          | jq -r '
-              .results[] 
-              | select(.path and .start.line and .start.col and .extra.message and .check_id)
-              | "e:\(.path):\(.start.line):\(.start.col): [\(.check_id)] \(.extra.message)"
-            ' \
+          | jq -r '.results[] | "\(.extra.severity[0:1]):\(.path):\(.start.line) \(.extra.message)"' \
+          | reviewdog \
+              -efm="%t:%f:%l %m" \
           | reviewdog \
               -efm="%t:%f:%l:%c: %m" \
               -name="semgrep" \
