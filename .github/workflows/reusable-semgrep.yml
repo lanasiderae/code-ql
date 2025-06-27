@@ -55,12 +55,9 @@ jobs:
           echo " --config $SEMGREP_RULES --severity ${FAIL_LEVEL^^}"
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
-          semgrep --config="$SEMGREP_RULES" --severity "${FAIL_LEVEL^^}" --json \
-          | jq -r '.results[] | "\(.extra.severity[0:1]):\(.path):\(.start.line) \(.extra.message)"' \
-
-          echo "e:server/routes.py:10:5: [test.rule] This is a test issue from reviewdog" \
+          semgrep --config="$SEMGREP_RULESET" --severity="${FAIL_LEVEL^^}" --sarif \
           | reviewdog \
-            -efm="%t:%f:%l:%c: %m" \
+            -f=sarif \
             -name="semgrep" \
             -reporter=github-pr-review \
             -fail-level=error \
