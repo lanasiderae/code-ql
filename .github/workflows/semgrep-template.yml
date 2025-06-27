@@ -54,15 +54,23 @@ jobs:
         run: |
           echo " --config $SEMGREP_RULES --severity ${FAIL_LEVEL^^}"
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
+          
+          CUSTOM_MESSAGE="If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
 
-          semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --sarif \
+          semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
+            | jq -r --arg msg "$CUSTOM_MESSAGE" '
+                .results[]
+                | "%E\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)" +
+                  (if (.extra.metadata.references | length) > 0 then "\n%CReferences: " + (.extra.metadata.references | join(", ")) else "" end) +
+                  "\n%C" + $msg +
+                  "\n%Z"
+              ' \
             | reviewdog \
-                -f=sarif \
+                -efm='%E%t:%f:%l: %m%n%C%n%Z' \
                 -name="semgrep" \
                 -reporter=github-pr-review \
                 -fail-level=error \
-                -filter-mode=added \
-
+                -filter-mode=added
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
