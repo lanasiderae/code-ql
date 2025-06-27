@@ -60,7 +60,7 @@ jobs:
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
             | jq -r --arg msg "$CUSTOM_MESSAGE" '
                 .results[]
-                | "%E\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)" +
+                | "%E\((.extra.severity[0:1] | ascii_upcase)):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)" +
                   (if (.extra.metadata.references | length) > 0 then "\n%CReferences: " + (.extra.metadata.references | join(", ")) else "" end) +
                   "\n%C" + $msg +
                   "\n%Z"
