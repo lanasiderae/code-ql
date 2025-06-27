@@ -55,7 +55,15 @@ jobs:
           echo " --config $SEMGREP_RULES --severity ${FAIL_LEVEL^^}"
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
-          semgrep --config="$SEMGREP_RULESET" --severity="${FAIL_LEVEL^^}" --json 
+          semgrep --config="$SEMGREP_RULESET" --severity="${FAIL_LEVEL^^}" --json \
+          | jq -r '.results[] | "\(.extra.severity[0:1]):\(.path):\(.end.line): \(.extra.message)"' \
+          | reviewdog \
+              -efm="%t:%f:%l: %m" \
+              -name="semgrep" \
+              -reporter=github-pr-review \
+              -fail-level=error \
+              -filter-mode=added \
+              -tee
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_RULES: ${{ inputs.semgrep_config }}

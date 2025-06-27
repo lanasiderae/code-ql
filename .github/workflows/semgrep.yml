@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   semgrep:
-   uses: ./.github/workflows/reusable-semgrep.yml
+   uses: ./.github/workflows/semgrep-template.yml
    with:
     branch_name: ${{ github.ref_name}}
     semgrep_config: p/default
