@@ -59,12 +59,25 @@ jobs:
 
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
             | jq -r --arg msg "$CUSTOM_MESSAGE" '
-                .results[]
-                | "%E\((.extra.severity[0:1] | ascii_upcase)):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)" +
-                  (if (.extra.metadata.references | length) > 0 then "\n%CReferences: " + (.extra.metadata.references | join(", ")) else "" end) +
-                  "\n%C" + $msg +
-                  "\n%Z"
-              ' \
+              .results[]
+              | (
+                  "%E" +
+                  ((.extra.severity[0:1] // "E") | ascii_upcase) + ":" +
+                  (.path // "unknown") + ":" +
+                  ((.start.line // 0) | tostring) + ": [" +
+                  (.extra.severity // "error") + "] " +
+                  (.extra.message // "No message")
+                ) +
+                (
+                  if (.extra.metadata.references? // []) | length > 0 then
+                    "\n%CReferences: " + ((.extra.metadata.references | join(", ")))
+                  else
+                    ""
+                  end
+                ) +
+                "\n%C" + $msg +
+                "\n%Z"
+            ' \
             | reviewdog \
                 -efm='%E%t:%f:%l: %m%n%C%n%Z' \
                 -name="semgrep" \
