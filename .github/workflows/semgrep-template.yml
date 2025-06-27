@@ -58,10 +58,17 @@ jobs:
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
             | jq -r --raw-output '
                 .results[]
-                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\n\(if (.extra.metadata.references | length) > 0 then "References: \(.extra.metadata.references[0])\n" else "" end)\n*If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
+                | "@@START@@ \(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)
+          References: \((.extra.metadata.references[0]) // "N/A")
+
+          *If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
               ' \
+            | sed 's/^@@START@@/E/' \
             | reviewdog \
-                -efm="%t:%f:%l: %m" \
+                -efm="%E%f:%l: [%t] %m" \
+                -efm="%C%m" \
+                -efm="%Z%m" \
+                -name="semgrep" \
                 -name="semgrep" \
                 -reporter=github-pr-review \
                 -fail-level=error \
