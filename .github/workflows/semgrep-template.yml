@@ -56,9 +56,9 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
-            | jq -r --raw-output '
+            | jq -r '
                 .results[]
-                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\(if (.extra.metadata.references | length) > 0 then " Docs: \(.extra.metadata.references[0])" else "" end)"
+                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\nReferences: \(.extra.metadata.references[0] // "N/A")\n\n*If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
               ' \
             | reviewdog \
                 -efm="%t:%f:%l: %m" \
