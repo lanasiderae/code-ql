@@ -54,8 +54,12 @@ jobs:
         run: |
           echo " --config $SEMGREP_RULES --severity ${FAIL_LEVEL^^}"
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
+
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
-            | jq -r '.results[] | "\(.extra.severity[0:1]):\(.path):\(.start.line): \(.extra.message)"' \
+            | jq -r '
+                .results[]
+                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\(if .extra.metadata.references[0] then \" Docs: \(.extra.metadata.references[0])\" else \"\" end)"
+              ' \
             | reviewdog \
                 -efm="%t:%f:%l: %m" \
                 -name="semgrep" \
