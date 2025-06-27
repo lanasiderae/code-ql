@@ -56,19 +56,16 @@ jobs:
           echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
 
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
-            | jq -r --raw-output '
-                .results[]
-                | "@@START@@ \(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)
-          References: \((.extra.metadata.references[0]) // "N/A")
-
-          *If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
-              ' \
-            | sed 's/^@@START@@/E/' \
+            | jq -r '
+              .results[] | 
+                "E:\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\n" +
+                "C:References: \(.extra.metadata.references[0] // "N/A")\n" +
+                "Z:*If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
+            ' \
             | reviewdog \
                 -efm="%E%f:%l: [%t] %m" \
-                -efm="%C%m" \
+                -efm="%C%t:%m" \
                 -efm="%Z%m" \
-                -name="semgrep" \
                 -name="semgrep" \
                 -reporter=github-pr-review \
                 -fail-level=error \
