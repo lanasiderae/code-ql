@@ -58,28 +58,12 @@ jobs:
           CUSTOM_MESSAGE="If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
 
           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
-            | jq -r --arg msg "$CUSTOM_MESSAGE" '
-              .results[]
-              | (
-                  "%E" +
-                  ((.extra.severity[0:1] // "E") | ascii_upcase) + ":" +
-                  (.path // "unknown") + ":" +
-                  ((.start.line // 0) | tostring) + ": [" +
-                  (.extra.severity // "error") + "] " +
-                  (.extra.message // "No message")
-                ) +
-                (
-                  if (.extra.metadata.references? // []) | length > 0 then
-                    "\n%CReferences: " + ((.extra.metadata.references | join(", ")))
-                  else
-                    ""
-                  end
-                ) +
-                "\n%C" + $msg +
-                "\n%Z"
-            ' \
+            | jq -r --raw-output '
+                .results[]
+                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\(if (.extra.metadata.references | length) > 0 then " Docs: \(.extra.metadata.references[0])" else "" end)"
+              ' \
             | reviewdog \
-                -efm='%E%t:%f:%l: %m%n%C%n%Z' \
+                -efm="%t:%f:%l: %m" \
                 -name="semgrep" \
                 -reporter=github-pr-review \
                 -fail-level=error \
