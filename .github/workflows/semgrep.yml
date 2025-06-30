@@ -1,0 +1,22 @@
+---
+name: Semgrep CE apiVersion
+
+defaults:
+  run:
+   shell: bash
+
+on: 
+  pull_request: {}
+  workflow_dispatch:
+    
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  semgrep:
+   uses: ./.github/workflows/semgrep-template.yml
+   with:
+    branch_name: ${{ github.ref_name}}
+    semgrep_config: p/default
+    
