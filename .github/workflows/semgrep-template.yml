@@ -50,9 +50,9 @@ jobs:
       - name: jq
         run: apk add --no-cache jq
 
-      - name: Run Reviewdog
+      - name: Run semgrep
         run: |
-           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --sarif \
+           semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" > semgrep.json
             |reviewdog \
               -name="semgrep" \
               -reporter=github-pr-review \
@@ -64,3 +64,13 @@ jobs:
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
           FILTER_MODE: ${{ inputs.filter_mode }}
           FAIL_LEVEL: ${{ inputs.fail_severity }}
+
+      - name: reviewdog
+        run: |
+          cat semgrep.json | bash ./.github/workflows/semgrep-format.sh \
+            |reviewdog \
+              -efm="%t:%f:%l: %m" \
+              -name="semgrep" \
+              -reporter=github-pr-review \
+              -fail-level=error \
+              -filter-mode=added 
