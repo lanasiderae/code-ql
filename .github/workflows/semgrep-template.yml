@@ -57,7 +57,7 @@ jobs:
           FAIL_LEVEL: ${{ inputs.fail_severity }}
 
       - name: Format Semgrep output to Reviewdog rdjson
-        run: ./format-semgrep-to-rdjson.sh semgrep-results.json semgrep-rdjson.json
+        run: ./.github/workflows/format-semgrep-to-rdjson.sh semgrep-results.json semgrep-rdjson.json
 
       - name: Run Reviewdog
         run: |
