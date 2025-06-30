@@ -4,7 +4,7 @@ set -eo pipefail
 INPUT_FILE=${1:-semgrep-results.json}
 OUTPUT_FILE=${2:-semgrep-rdjson.json}
 
-jq -c '[.results[] |
+jq -c '.results[] |
   {
     source: "semgrep",
     type: "diagnostic",
@@ -35,4 +35,4 @@ jq -c '[.results[] |
       }
     }
   }
-]' "$INPUT_FILE" > "$OUTPUT_FILE"
+' "$INPUT_FILE" > "$OUTPUT_FILE"
