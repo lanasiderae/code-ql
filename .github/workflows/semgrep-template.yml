@@ -61,6 +61,8 @@ jobs:
 
       - name: reviewdog
         run: |
+          cat semgrep.json 
+          
           cat semgrep.json | bash ./.github/workflows/semgrep-format.sh \
             |reviewdog \
               -efm="%t:%f:%l: %m" \
