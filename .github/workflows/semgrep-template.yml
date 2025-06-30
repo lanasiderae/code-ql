@@ -50,24 +50,23 @@ jobs:
       - name: jq
         run: apk add --no-cache jq
 
-      - name: reviewdog
-        run: |
-          echo " --config $SEMGREP_RULES --severity ${FAIL_LEVEL^^}"
-          echo " filter mode $FILTER_MODE fail-level $FAIL_LEVEL"
-          
-          CUSTOM_MESSAGE="If you believe this is a false positive or acceptable risk, add # nosemgrep or // nosemgrep to skip this finding."
+      - name: Run Semgrep
+        run: semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json > semgrep-results.json
+        env:
+          SEMGREP_RULES: ${{ inputs.semgrep_config }}
+          FAIL_LEVEL: ${{ inputs.fail_severity }}
 
-          semgrep --config="$SEMGREP_RULES" --severity="${FAIL_LEVEL^^}" --json \
-            | jq -r --raw-output '
-                .results[]
-                | "\(.extra.severity[0:1]):\(.path):\(.start.line): [\(.extra.severity)] \(.extra.message)\(if (.extra.metadata.references | length) > 0 then " Docs: \(.extra.metadata.references[0])" else "" end)"
-              ' \
-            | reviewdog \
-                -efm="%t:%f:%l: %m" \
-                -name="semgrep" \
-                -reporter=github-pr-review \
-                -fail-level=error \
-                -filter-mode=added
+      - name: Format Semgrep output to Reviewdog rdjson
+        run: ./format-semgrep-to-rdjson.sh semgrep-results.json semgrep-rdjson.json
+
+      - name: Run Reviewdog
+        run: |
+          reviewdog \
+            -name="semgrep" \
+            -reporter=github-pr-review \
+            -fail-level=error \
+            -filter-mode=added \
+            -f=rdjson < semgrep-rdjson.json
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SEMGREP_RULES: ${{ inputs.semgrep_config }}
