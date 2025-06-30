@@ -1,17 +1,10 @@
-#!/bin/bash
-set -eo pipefail
-
-INPUT_FILE=${1:-semgrep-results.json}
-OUTPUT_FILE=${2:-semgrep-rdjson.json}
-
 jq -c '.results[] |
   {
     source: "semgrep",
     type: "diagnostic",
     check_name: .check_id,
     severity: (
-      if .extra.severity == "CRITICAL" then "ERROR"
-      elif .extra.severity == "ERROR" then "ERROR"
+      if .extra.severity == "CRITICAL" or .extra.severity == "ERROR" then "ERROR"
       elif .extra.severity == "WARNING" then "WARNING"
       else "INFO" end
     ),
