@@ -1,4 +1,8 @@
 #!/bin/bash
+set -eo pipefail
+
+INPUT_FILE="${1:-semgrep-results.json}"
+OUTPUT_FILE="${2:-semgrep-rdjson.json}"
 
 jq -c '.results[] |
   {
