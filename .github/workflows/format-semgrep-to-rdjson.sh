@@ -1,3 +1,5 @@
+#!/bin/bash
+
 jq -c '.results[] |
   {
     source: "semgrep",
